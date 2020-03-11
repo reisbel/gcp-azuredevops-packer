@@ -1,0 +1,46 @@
+name: '$(Build.DefinitionName) $(date:yyyyMMdd)$(rev:.r)'
+
+trigger:
+  branches:
+    include:
+    - master
+
+jobs:
+- job: Win2019
+  timeoutInMinutes: 0
+  pool:
+    pool:
+      vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: DownloadSecureFile@1
+    name: service_account_key
+    displayName: 'Download service account key'
+    inputs:
+      secureFile: $(account_file_id)
+      
+  - bash: cp $(service_account_key.secureFilePath) $(System.DefaultWorkingDirectory)/
+    displayName: 'Copy service account key'
+
+  - bash: ls $(System.DefaultWorkingDirectory)/
+  
+  - task: PackerTool@0
+    inputs:
+      version: '1.3.4'
+
+  - task: Packer@1
+    inputs:
+      connectedServiceType: 'none'
+      templatePath: '$(System.DefaultWorkingDirectory)/server2019-core-gcp.json'
+      command: 'build'
+      variables: |+
+        account_file=$(service_account_key.secureFilePath)
+        project_id=$(project_id)
+        source_image_family=$(source_image_family)
+        disk_size=$(disk_size)
+        machine_type=$(machine_type)
+        zone=$(zone)
+        install_password=$(install_password)
+        image_family=$(image_family)
+        state_timeout=$(state_timeout)
+
