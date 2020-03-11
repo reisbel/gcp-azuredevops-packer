@@ -22,13 +22,13 @@ jobs:
   - bash: cp $(service_account_key.secureFilePath) $(System.DefaultWorkingDirectory)/
     displayName: 'Copy service account key'
 
-  - bash: ls $(System.DefaultWorkingDirectory)/
-  
   - task: PackerTool@0
+    displayName: 'Install Packer'
     inputs:
-      version: '1.3.4'
+      version: '1.5.4'
 
   - task: Packer@1
+    displayName: 'Build image with Packer'
     inputs:
       connectedServiceType: 'none'
       templatePath: '$(System.DefaultWorkingDirectory)/server2019-core-gcp.json'
